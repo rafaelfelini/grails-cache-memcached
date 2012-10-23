@@ -19,7 +19,7 @@ grails.project.dependency.resolution = {
         //mavenRepo "http://repository.codehaus.org"
         //mavenRepo "http://download.java.net/maven/2/"
         //mavenRepo "http://repository.jboss.com/maven2/"
-		mavenRepo 'http://files.couchbase.com/maven2/'
+        mavenRepo 'http://files.couchbase.com/maven2/' //spymemcached
     }
     dependencies {
 		compile('spy:spymemcached:2.7.3') {
@@ -31,7 +31,7 @@ grails.project.dependency.resolution = {
 		compile ':cache:1.0.0'
 		
         build(":tomcat:$grailsVersion",
-              ":release:2.0.3",
+              ":release:2.0.4",
               ":rest-client-builder:1.0.2") {
             export = false
         }
