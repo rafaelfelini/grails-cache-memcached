@@ -3,10 +3,11 @@ package grails.plugin.cache.memcached
 import java.util.concurrent.Future
 import java.util.concurrent.TimeUnit
 
+import net.spy.memcached.MemcachedClient
+
 class CacheService {
 
-	// net.spy.memcached.MemcachedClient
-	def memcachedClient
+	MemcachedClient memcachedClient
 
 	public void add(String key, Object value, int expiration) {
 		memcachedClient.add(key, expiration, value)
@@ -21,15 +22,20 @@ class CacheService {
 		}
 		return null
 	}
-
-	public void clear() {
-		memcachedClient.flush()
+	
+	public Object get(String key, Integer expiration, Closure closure) {
+		Object value = get(key)
+		if (value == null) {
+			value = closure.call()
+			set(key, value, expiration)
+		}
+		return value
 	}
 
-	public void delete(String key) {
-		memcachedClient.delete(key)
+	public void set(String key, int expiration, Object value) {
+		memcachedClient.set(key, expiration, value)
 	}
-
+	
 	public Map<String, Object> get(String[] keys) {
 		Future<Map<String, Object>> future = memcachedClient.asyncGetBulk(tc, keys)
 		try {
@@ -48,11 +54,11 @@ class CacheService {
 		return memcachedClient.decr(key, by, 0)
 	}
 
-	public void replace(String key, Object value, int expiration) {
+	public void replace(String key, int expiration, Object value) {
 		memcachedClient.replace(key, expiration, value)
 	}
 
-	public boolean safeAdd(String key, Object value, int expiration) {
+	public boolean safeAdd(String key, int expiration, Object value) {
 		Future<Boolean> future = memcachedClient.add(key, expiration, value)
 		try {
 			return future.get(1, TimeUnit.SECONDS)
@@ -72,7 +78,7 @@ class CacheService {
 		return false
 	}
 
-	public boolean safeReplace(String key, Object value, int expiration) {
+	public boolean safeReplace(String key, int expiration, Object value) {
 		Future<Boolean> future = memcachedClient.replace(key, expiration, value)
 		try {
 			return future.get(1, TimeUnit.SECONDS)
@@ -82,7 +88,7 @@ class CacheService {
 		return false
 	}
 
-	public boolean safeSet(String key, Object value, int expiration) {
+	public boolean safeSet(String key, int expiration, Object value) {
 		Future<Boolean> future = memcachedClient.set(key, expiration, value)
 		try {
 			return future.get(1, TimeUnit.SECONDS)
@@ -92,11 +98,16 @@ class CacheService {
 		return false
 	}
 
-	public void set(String key, Object value, int expiration) {
-		memcachedClient.set(key, expiration, value)
+	public void delete(String key) {
+		memcachedClient.delete(key)
+	}
+
+	public void clear() {
+		memcachedClient.flush()
 	}
 
 	public void stop() {
 		memcachedClient.shutdown()
 	}
+	
 }
