@@ -6,6 +6,8 @@ import java.util.concurrent.TimeUnit
 import net.spy.memcached.MemcachedClient
 
 class CacheService {
+	
+	static transactional = false
 
 	MemcachedClient memcachedClient
 
