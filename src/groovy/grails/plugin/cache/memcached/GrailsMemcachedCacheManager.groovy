@@ -11,19 +11,24 @@ public class GrailsMemcachedCacheManager implements GrailsCacheManager {
 	
 	def grailsApplication
 
-	def caches = [:]
+	Map<String, Cache> caches = [:]
 
 	@Override
 	public Cache getCache(String name) {
 		
-		def cache = caches.get(name)
+		Cache cache = caches.get(name)
 		if (!cache) {
-			println grailsApplication.config.grails.cache.config
 			
-			// TODO arrumar aqui
-//			if (!cacheConfig) throw new RuntimeException("Cache ${name} not configured.")
+			Map regions = grailsApplication.config.memcached.regions ?: [:]
+			if (regions.containsKey(name)) {
+				
+				def cacheConfig = regions.get(name)
+				cache = new GrailsMemcachedCache(name, memcachedClient, cacheConfig.ttl)
+			} else {
 			
-			cache = new GrailsMemcachedCache(name, memcachedClient, 1800)//cacheConfig.ttl)
+				cache = new GrailsMemcachedCache(name, memcachedClient, 360)
+			}
+			
 			caches.put(name, cache)
 		}
 
@@ -32,16 +37,19 @@ public class GrailsMemcachedCacheManager implements GrailsCacheManager {
 
 	@Override
 	public Collection<String> getCacheNames() {
+		
 		return caches.keySet()
 	}
 
 	@Override
 	public boolean cacheExists(String name) {
+		
 		return caches.containsKey(name)
 	}
 
 	@Override
 	public boolean destroyCache(String name) {
+		
 		throw new RuntimeException('not allowed')
 	}
 }

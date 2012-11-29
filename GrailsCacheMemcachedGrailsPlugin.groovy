@@ -24,8 +24,13 @@ class GrailsCacheMemcachedGrailsPlugin {
     def doWithSpring = {
 		transcoder(SerializingTranscoder)
 		
+		if (!application.config.memcached.servers) {
+			
+			log.error 'Please, provide the configuration "cache.memcached.servers"'
+		}
+		
 		memcachedClient(net.spy.memcached.spring.MemcachedClientFactoryBean) {
-			servers = 'localhost:11211'
+			servers = application.config.memcached.servers
 			transcoder = ref('transcoder')
 		}
 		
